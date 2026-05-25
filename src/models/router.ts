@@ -1,11 +1,36 @@
-import type { ModelConfig, ModelSet, CircuitBreaker } from '../types.js'
+/**
+ * calcRetryDelay — backoff exponencial com jitter para uso no AgentLoop.
+ *
+ * Uso recomendado em loop.ts:
+ *   import { calcRetryDelay } from './retry.js'   // ou de './router.js'
+ *   // entre tentativas de erro retryable:
+ *   await sleep(calcRetryDelay(attempt))           // attempt começa em 0
+ */
+
+import type { ModelConfig, ModelSet, CircuitBreaker, CircuitState } from '../types.js'
 import { ModelClient } from './client.js'
 import { classifyIntent } from './errors.js'
+
+/**
+ * Calcula o delay de retry com backoff exponencial e jitter ±30%.
+ * @param attempt - índice da tentativa (0-based)
+ * @param baseMs  - delay base em ms (padrão 1000)
+ * @param maxMs   - delay máximo em ms (padrão 30000)
+ * @returns delay em ms (mínimo 500)
+ */
+export function calcRetryDelay(attempt: number, baseMs = 1000, maxMs = 30000): number {
+  const exp = Math.min(baseMs * Math.pow(2, attempt), maxMs)
+  const jitter = exp * 0.3 * (Math.random() * 2 - 1)
+  return Math.max(500, Math.round(exp + jitter))
+}
 
 export class ModelRouter {
   private breakers: Map<string, CircuitBreaker> = new Map()
 
-  constructor(private models: ModelSet) {}
+  constructor(
+    private models: ModelSet,
+    private log: (msg: string) => void = () => {},
+  ) {}
 
   select(userInput: string): ModelConfig {
     const intent = classifyIntent(userInput)
@@ -51,8 +76,17 @@ export class ModelRouter {
     return new ModelClient(config)
   }
 
+  getCircuitState(config: ModelConfig): CircuitState {
+    const breaker = this.breakers.get(this.breakerKey(config))
+    return breaker?.state ?? 'closed'
+  }
+
   recordSuccess(config: ModelConfig): void {
     const key = this.breakerKey(config)
+    const existing = this.breakers.get(key)
+    if (existing && existing.state !== 'closed') {
+      this.log(`[CB] Circuit CLOSED: ${key} — provedor restaurado`)
+    }
     this.breakers.set(key, {
       state: 'closed',
       failures: 0,
@@ -78,6 +112,7 @@ export class ModelRouter {
         lastFailure: now,
         nextProbe: now + 60000,
       })
+      this.log(`[CB] Circuit OPEN: ${key} após ${failures} falhas. Probe em 60s`)
     } else {
       this.breakers.set(key, {
         state: existing.state,
@@ -100,6 +135,7 @@ export class ModelRouter {
     if (breaker.state === 'open') {
       if (Date.now() < breaker.nextProbe) return true
       this.breakers.set(key, { ...breaker, state: 'half-open' })
+      this.log(`[CB] Circuit HALF-OPEN: ${key} — enviando probe`)
       return false
     }
 
