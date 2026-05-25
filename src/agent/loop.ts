@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs'
 import type { AgentConfig, Message, Tool, ToolCall, LoopState } from '../types.js'
+import { extractToolCallsFromMarkdown, toInternalToolCalls, removeJsonBlocks } from './tool-call-parser.js'
 import { ModelRouter } from '../models/router.js'
 import { parseApiError, formatErrorMessage } from '../models/errors.js'
 import { SecretsGuard } from '../security/secrets.js'
@@ -106,6 +107,17 @@ export class AgentLoop {
         }
 
         if (this.cancelled) break
+
+        // Fallback: verificar se o modelo retornou tool calls como blocos JSON em markdown
+        if (assistantContent && toolCallsToExecute.length === 0) {
+          const fallbackCalls = extractToolCallsFromMarkdown(assistantContent)
+          if (fallbackCalls.length > 0) {
+            this.tui.showWarning(`⚠ Tool calls detectadas via fallback markdown parser (${fallbackCalls.length} call(s))`)
+            toolCallsToExecute.push(...toInternalToolCalls(fallbackCalls))
+            // remover os blocos json do assistantContent para não poluir o histórico
+            assistantContent = removeJsonBlocks(assistantContent).trim()
+          }
+        }
 
         if (toolCallsToExecute.length > 0) {
           this.messages.push({
