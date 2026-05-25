@@ -9,6 +9,7 @@ import { KeyboardHandler } from './ui/keyboard.js'
 import { SessionStorage } from './storage/sessions.js'
 import { parseAgentMd, buildSystemPromptFromAgentMd } from './agent/agent-md.js'
 import { loadSkills, formatSkillsForPrompt } from './skills/loader.js'
+import { getGitContext, formatGitContext } from './context/git.js'
 
 const VERSION = '0.1.0'
 
@@ -65,6 +66,13 @@ async function main(): Promise<void> {
         break
       }
     } else {
+      // Refresh git context before each turn and update system prompt suffix
+      const gitCtx = await getGitContext(config.workspaceDir)
+      const gitSection = formatGitContext(gitCtx)
+      if (gitSection) {
+        loop.setGitContext(gitSection)
+      }
+
       await loop.run(trimmed)
       interactionCount++
 

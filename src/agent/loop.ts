@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import type { AgentConfig, Message, Tool, ToolCall, LoopState } from '../types.js'
 import { extractToolCallsFromMarkdown, toInternalToolCalls, removeJsonBlocks } from './tool-call-parser.js'
 import { ModelRouter } from '../models/router.js'
+import { sleep, calcRetryDelay } from '../models/retry.js'
 import { parseApiError, formatErrorMessage } from '../models/errors.js'
 import { SecretsGuard } from '../security/secrets.js'
 import { DiffApproval } from '../ui/diff.js'
@@ -17,6 +18,7 @@ export class AgentLoop {
   private tracker: CostTracker
   private iteration = 0
   private cancelled = false
+  private gitContext = ''
 
   constructor(
     private config: AgentConfig,
@@ -56,9 +58,23 @@ export class AgentLoop {
     this.messages = messages
   }
 
+  setGitContext(gitSection: string): void {
+    this.gitContext = gitSection
+  }
+
   async run(userInput: string): Promise<void> {
     this.cancelled = false
     this.iteration = 0
+
+    // Inject git context as a system note if available
+    if (this.gitContext) {
+      const existing = this.messages.findIndex(m => m.role === 'system' && m.content?.startsWith('## Git Context'))
+      if (existing >= 0) {
+        this.messages[existing] = { role: 'system', content: this.gitContext }
+      } else {
+        this.messages.push({ role: 'system', content: this.gitContext })
+      }
+    }
 
     this.messages.push({ role: 'user', content: userInput })
 
@@ -155,6 +171,9 @@ export class AgentLoop {
           this.tui.showError(`Limite de ${this.config.maxIterations} iterações atingido.`)
           break
         }
+
+        const delay = calcRetryDelay(this.iteration - 1)
+        await sleep(delay)
       }
     }
 
