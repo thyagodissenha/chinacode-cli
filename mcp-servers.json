@@ -1,0 +1,28 @@
+{
+  "servers": [
+    {
+      "name": "linear",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@linear/mcp"],
+      "env": {
+        "LINEAR_API_KEY": "${LINEAR_API_KEY}"
+      },
+      "description": "Linear issue tracking — criar, listar e atualizar issues do projeto ChinaCode CLI"
+    },
+    {
+      "name": "filesystem",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_DIR}"],
+      "description": "Acesso controlado ao workspace do projeto"
+    },
+    {
+      "name": "git",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "${WORKSPACE_DIR}"],
+      "description": "Operações git: commits, branches, diff, log"
+    }
+  ]
+}
