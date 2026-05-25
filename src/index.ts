@@ -22,7 +22,7 @@ function loadSystemPrompt(config: ReturnType<typeof loadConfig>): string {
 
 async function main(): Promise<void> {
   const config = loadConfig()
-  const tools = createTools(config.workspaceDir)
+  const tools = createTools(config.workspaceDir, config.models)
   const storage = new SessionStorage()
   const tui = new TUI(config)
   const systemPrompt = loadSystemPrompt(config)

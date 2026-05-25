@@ -4,6 +4,7 @@ import type { TUI } from './tui.js'
 import type { AgentLoop } from '../agent/loop.js'
 import type { SessionStorage } from '../storage/sessions.js'
 import { loadSkills } from '../skills/loader.js'
+import { compactMessages } from '../agent/compactor.js'
 
 const HELP_TEXT = `
 Comandos disponíveis:
@@ -12,7 +13,7 @@ Comandos disponíveis:
   /sandbox <on|off>      Liga/desliga sandbox Docker
   /cost, /c              Mostra custo da sessão atual
   /clear, /cls           Limpa o histórico da conversa
-  /compact               Sumariza contexto longo (em breve)
+  /compact               Sumariza o contexto longo da conversa
   /sessions              Lista sessões anteriores
   /resume <id>           Retoma sessão salva
   /export                Exporta sessão para JSON/CSV
@@ -123,9 +124,21 @@ export class CommandParser {
         return true
       }
 
-      case '/compact':
-        this.tui.showWarning('/compact será implementado na Fase 2 (Intelligence).')
+      case '/compact': {
+        const state = this.loop.state
+        if (state.messages.length === 0) {
+          this.tui.showWarning('Nenhum contexto para compactar.')
+          return true
+        }
+        this.tui.showWarning('Compactando contexto...')
+        const modelConfig = this.config.models.fast ?? this.config.models.default
+        const { ModelClient } = await import('../models/client.js')
+        const fastClient = new ModelClient(modelConfig)
+        const compacted = await compactMessages(state.messages, modelConfig.model, fastClient)
+        this.loop.setMessages(compacted)
+        process.stdout.write(`Contexto compactado: ${state.messages.length} → ${compacted.length} mensagens\n`)
         return true
+      }
 
       case '/exit':
       case '/q':

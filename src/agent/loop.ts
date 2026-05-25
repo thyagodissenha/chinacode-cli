@@ -8,6 +8,7 @@ import { SecretsGuard } from '../security/secrets.js'
 import { DiffApproval } from '../ui/diff.js'
 import { CostTracker } from '../cost/tracker.js'
 import { getPricing } from '../config.js'
+import { needsCompaction, compactMessages } from './compactor.js'
 import type { TUI } from '../ui/tui.js'
 
 export class AgentLoop {
@@ -82,6 +83,14 @@ export class AgentLoop {
 
     while (this.iteration < this.config.maxIterations && !this.cancelled) {
       this.iteration++
+
+      if (needsCompaction(this.messages, modelConfig.model)) {
+        this.tui.showWarning('📦 Contexto próximo do limite — compactando automaticamente...')
+        const fastConfig = this.config.models.fast ?? modelConfig
+        const fastClient = this.router.getClient(fastConfig)
+        this.messages = await compactMessages(this.messages, modelConfig.model, fastClient)
+        this.tui.showWarning('✓ Contexto compactado.')
+      }
 
       const client = this.router.getClient(modelConfig)
 
