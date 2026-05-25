@@ -23,6 +23,25 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "${WORKSPACE_DIR}"],
       "description": "Operações git: commits, branches, diff, log"
+    },
+    {
+      "name": "postgres",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${POSTGRES_CONNECTION_STRING}"],
+      "description": "Consultas PostgreSQL usando POSTGRES_CONNECTION_STRING",
+      "disabled": true
+    },
+    {
+      "name": "brave_search",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      },
+      "description": "Busca web via Brave Search usando BRAVE_API_KEY",
+      "disabled": true
     }
   ]
 }

@@ -78,6 +78,19 @@ Exporta o histórico de custo da sessão nos formatos JSON e CSV para o stdout.
 model,inputTokens,outputTokens,...
 ```
 
+### `/bench <tarefa>`
+
+Executa a mesma tarefa nos modelos configurados (`DEFAULT_MODEL`, `REASONING_MODEL`, `FAST_MODEL`, `LOCAL_MODEL`) e imprime uma tabela com tempo, tokens, custo estimado, score básico e preview da resposta.
+
+```
+❯ /bench explique o fluxo de tool calls deste projeto
+Benchmark:
+Modelo     | Tempo  | Tokens | Custo     | Score | Preview
+────────── | ────── | ────── | ───────── | ───── | ───────
+qwen-plus  | 1240ms | 812    | $0.001120 | 0.50  | ...
+qwen-turbo | 880ms  | 690    | $0.000950 | 0.50  | ...
+```
+
 ---
 
 ## Modelo e sandbox

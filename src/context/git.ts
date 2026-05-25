@@ -38,20 +38,20 @@
  * -----------------------------------------------------------------
  */
 
-import { execFile as _execFile } from 'node:child_process'
-import { promisify } from 'node:util'
+import { execFile as _execFile } from "node:child_process";
+import { promisify } from "node:util";
 
-const execFile = promisify(_execFile)
+const execFile = promisify(_execFile);
 
-const GIT_TIMEOUT_MS = 3000
+const GIT_TIMEOUT_MS = 3000;
 
 export interface GitContext {
-  isRepo: boolean
-  branch: string
-  stagedFiles: string[]
-  modifiedFiles: string[]
-  recentCommits: string[]
-  stagedDiffStat: string
+	isRepo: boolean;
+	branch: string;
+	stagedFiles: string[];
+	modifiedFiles: string[];
+	recentCommits: string[];
+	stagedDiffStat: string;
 }
 
 /**
@@ -59,17 +59,17 @@ export interface GitContext {
  * Returns stdout on success or an empty string on any error.
  */
 async function runGit(args: string[], cwd: string): Promise<string> {
-  try {
-    const { stdout } = await execFile('git', args, {
-      cwd,
-      timeout: GIT_TIMEOUT_MS,
-      // Prevent stdout/stderr buffers from blowing up for large repos
-      maxBuffer: 1024 * 512,
-    })
-    return stdout.trim()
-  } catch {
-    return ''
-  }
+	try {
+		const { stdout } = await execFile("git", args, {
+			cwd,
+			timeout: GIT_TIMEOUT_MS,
+			// Prevent stdout/stderr buffers from blowing up for large repos
+			maxBuffer: 1024 * 512,
+		});
+		return stdout.trim();
+	} catch {
+		return "";
+	}
 }
 
 /**
@@ -77,16 +77,16 @@ async function runGit(args: string[], cwd: string): Promise<string> {
  * We intentionally avoid throwing — the caller receives a plain boolean.
  */
 async function isGitRepo(cwd: string): Promise<boolean> {
-  try {
-    const { stdout } = await execFile(
-      'git',
-      ['rev-parse', '--is-inside-work-tree'],
-      { cwd, timeout: GIT_TIMEOUT_MS },
-    )
-    return stdout.trim() === 'true'
-  } catch {
-    return false
-  }
+	try {
+		const { stdout } = await execFile(
+			"git",
+			["rev-parse", "--is-inside-work-tree"],
+			{ cwd, timeout: GIT_TIMEOUT_MS },
+		);
+		return stdout.trim() === "true";
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -96,30 +96,33 @@ async function isGitRepo(cwd: string): Promise<boolean> {
  *   - X = index (staged) status
  *   - Y = work-tree (unstaged) status
  */
-function parseStatusShort(raw: string): { staged: string[]; modified: string[] } {
-  const staged: string[] = []
-  const modified: string[] = []
+function parseStatusShort(raw: string): {
+	staged: string[];
+	modified: string[];
+} {
+	const staged: string[] = [];
+	const modified: string[] = [];
 
-  for (const line of raw.split('\n')) {
-    if (line.length < 3) continue
-    const x = line[0]!
-    const y = line[1]!
-    const file = line.slice(3).trim()
+	for (const line of raw.split("\n")) {
+		if (line.length < 3) continue;
+		const x = line[0] ?? " ";
+		const y = line[1] ?? " ";
+		const file = line.slice(3).trim();
 
-    if (!file) continue
+		if (!file) continue;
 
-    // Index column (X) non-space and non-? means staged change
-    if (x !== ' ' && x !== '?') {
-      staged.push(file)
-    }
+		// Index column (X) non-space and non-? means staged change
+		if (x !== " " && x !== "?") {
+			staged.push(file);
+		}
 
-    // Work-tree column (Y) non-space and non-? means unstaged modification
-    if (y !== ' ' && y !== '?') {
-      modified.push(file)
-    }
-  }
+		// Work-tree column (Y) non-space and non-? means unstaged modification
+		if (y !== " " && y !== "?") {
+			modified.push(file);
+		}
+	}
 
-  return { staged, modified }
+	return { staged, modified };
 }
 
 /**
@@ -130,40 +133,40 @@ function parseStatusShort(raw: string): { staged: string[]; modified: string[] }
  * The only field that can short-circuit the whole function is `isRepo`.
  */
 export async function getGitContext(workspaceDir: string): Promise<GitContext> {
-  const empty: GitContext = {
-    isRepo: false,
-    branch: '',
-    stagedFiles: [],
-    modifiedFiles: [],
-    recentCommits: [],
-    stagedDiffStat: '',
-  }
+	const empty: GitContext = {
+		isRepo: false,
+		branch: "",
+		stagedFiles: [],
+		modifiedFiles: [],
+		recentCommits: [],
+		stagedDiffStat: "",
+	};
 
-  const repoCheck = await isGitRepo(workspaceDir)
-  if (!repoCheck) return empty
+	const repoCheck = await isGitRepo(workspaceDir);
+	if (!repoCheck) return empty;
 
-  // Run all remaining git commands in parallel to minimise latency
-  const [branchRaw, statusRaw, logRaw, diffStatRaw] = await Promise.all([
-    runGit(['branch', '--show-current'], workspaceDir),
-    runGit(['status', '--short'], workspaceDir),
-    runGit(['log', '--oneline', '-5'], workspaceDir),
-    runGit(['diff', '--cached', '--stat'], workspaceDir),
-  ])
+	// Run all remaining git commands in parallel to minimise latency
+	const [branchRaw, statusRaw, logRaw, diffStatRaw] = await Promise.all([
+		runGit(["branch", "--show-current"], workspaceDir),
+		runGit(["status", "--short"], workspaceDir),
+		runGit(["log", "--oneline", "-5"], workspaceDir),
+		runGit(["diff", "--cached", "--stat"], workspaceDir),
+	]);
 
-  const { staged, modified } = parseStatusShort(statusRaw)
+	const { staged, modified } = parseStatusShort(statusRaw);
 
-  const recentCommits = logRaw
-    ? logRaw.split('\n').filter((l) => l.length > 0)
-    : []
+	const recentCommits = logRaw
+		? logRaw.split("\n").filter((l) => l.length > 0)
+		: [];
 
-  return {
-    isRepo: true,
-    branch: branchRaw,
-    stagedFiles: staged,
-    modifiedFiles: modified,
-    recentCommits,
-    stagedDiffStat: diffStatRaw,
-  }
+	return {
+		isRepo: true,
+		branch: branchRaw,
+		stagedFiles: staged,
+		modifiedFiles: modified,
+		recentCommits,
+		stagedDiffStat: diffStatRaw,
+	};
 }
 
 /**
@@ -171,33 +174,33 @@ export async function getGitContext(workspaceDir: string): Promise<GitContext> {
  * prompt.  Returns an empty string when `isRepo` is false.
  */
 export function formatGitContext(ctx: GitContext): string {
-  if (!ctx.isRepo) return ''
+	if (!ctx.isRepo) return "";
 
-  const lines: string[] = ['## Git Context']
+	const lines: string[] = ["## Git Context"];
 
-  lines.push(`Branch: ${ctx.branch || '(unknown)'}`)
+	lines.push(`Branch: ${ctx.branch || "(unknown)"}`);
 
-  if (ctx.stagedFiles.length > 0) {
-    lines.push(`Staged: ${ctx.stagedFiles.join(', ')}`)
-  }
+	if (ctx.stagedFiles.length > 0) {
+		lines.push(`Staged: ${ctx.stagedFiles.join(", ")}`);
+	}
 
-  if (ctx.modifiedFiles.length > 0) {
-    lines.push(`Modified: ${ctx.modifiedFiles.join(', ')}`)
-  }
+	if (ctx.modifiedFiles.length > 0) {
+		lines.push(`Modified: ${ctx.modifiedFiles.join(", ")}`);
+	}
 
-  if (ctx.recentCommits.length > 0) {
-    lines.push('Recent commits:')
-    for (const commit of ctx.recentCommits) {
-      lines.push(`  ${commit}`)
-    }
-  }
+	if (ctx.recentCommits.length > 0) {
+		lines.push("Recent commits:");
+		for (const commit of ctx.recentCommits) {
+			lines.push(`  ${commit}`);
+		}
+	}
 
-  if (ctx.stagedDiffStat) {
-    lines.push('Staged diff stat:')
-    for (const statLine of ctx.stagedDiffStat.split('\n')) {
-      lines.push(`  ${statLine}`)
-    }
-  }
+	if (ctx.stagedDiffStat) {
+		lines.push("Staged diff stat:");
+		for (const statLine of ctx.stagedDiffStat.split("\n")) {
+			lines.push(`  ${statLine}`);
+		}
+	}
 
-  return lines.join('\n')
+	return lines.join("\n");
 }

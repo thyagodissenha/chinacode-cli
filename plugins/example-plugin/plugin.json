@@ -1,0 +1,29 @@
+{
+  "name": "example-plugin",
+  "version": "0.1.0",
+  "description": "Example metadata-only plugin manifest.",
+  "entrypoint": "./dist/index.js",
+  "commands": [
+    {
+      "name": "example:hello",
+      "description": "Show a friendly example response.",
+      "usage": "/example:hello <name>"
+    }
+  ],
+  "tools": [
+    {
+      "name": "example_echo",
+      "description": "Echo a message for demonstration.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message to echo."
+          }
+        },
+        "required": ["message"]
+      }
+    }
+  ]
+}

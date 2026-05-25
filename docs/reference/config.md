@@ -39,6 +39,9 @@ O ChinaCode lê configuração de variáveis de ambiente ou de um arquivo `.env`
 | `AUTO_APPROVE` | `false` | Aprova automaticamente escrita/edição de arquivos sem prompt |
 | `SESSION_TIMEOUT_MS` | `300000` | Timeout de inatividade da sessão em ms (5 min) |
 | `WORKSPACE_DIR` | `.` | Diretório base para resolução de caminhos relativos |
+| `MCP_ENABLED` | `false` | Carrega servidores de `mcp-servers.json` e expõe ferramentas `mcp_<server>_<tool>` |
+| `RAG_ENABLED` | `false` | Indexa arquivos texto do workspace e injeta contexto relevante por turno |
+| `RAG_MAX_FILES` | `1000` | Limite operacional planejado para indexação local |
 
 ---
 
@@ -49,6 +52,65 @@ O ChinaCode lê configuração de variáveis de ambiente ou de um arquivo `.env`
 | `SANDBOX_ENABLED` | `true` | Executa comandos bash dentro de container Docker isolado |
 
 Com `SANDBOX_ENABLED=true`, o Docker precisa estar instalado e em execução. Se não estiver disponível, o agente executa no host com um aviso.
+
+---
+
+## MCP Hub
+
+O arquivo `mcp-servers.json` define servidores MCP locais (`stdio`) ou remotos (`sse`). Ao ligar `MCP_ENABLED=true`, o CLI valida o arquivo, interpola variáveis no formato `${VARIAVEL}` e registra ferramentas com namespace:
+
+```text
+mcp_<server>_<tool>
+```
+
+Servidores que falham na inicialização são ignorados com aviso, sem impedir os demais.
+
+Exemplo:
+
+```json
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_DIR}"]
+    },
+    {
+      "name": "remote_docs",
+      "transport": "sse",
+      "url": "https://example.com/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer ${DOCS_TOKEN}"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Plugins
+
+Plugins locais ficam em `plugins/<nome>/plugin.json`. O CLI lê e valida apenas o manifesto; nenhum código de plugin é executado durante a descoberta.
+
+Campos principais:
+
+```json
+{
+  "name": "example-plugin",
+  "version": "0.1.0",
+  "description": "Plugin de exemplo",
+  "commands": [],
+  "tools": []
+}
+```
+
+---
+
+## RAG local
+
+Com `RAG_ENABLED=true`, o CLI cria um índice em memória para arquivos texto do workspace, ignorando `.git`, `dist` e `node_modules`. A cada mensagem do usuário, os trechos mais relevantes são adicionados como contexto interno antes da chamada ao modelo.
 
 ---
 

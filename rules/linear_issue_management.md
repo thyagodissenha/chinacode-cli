@@ -305,7 +305,25 @@ comando usado para testar
 
 ---
 
-## 10. Regra final
+## 10. Ciclo de vida da issue (status)
+
+O agente deve atualizar o status da issue no Linear em dois momentos obrigatórios:
+
+### Ao iniciar
+
+1. Atualizar o status da issue para `In Progress` via MCP (`save_issue`).
+2. Atribuir a issue ao próprio agente (usuário bot correspondente).
+
+### Ao finalizar
+
+1. Registrar o resultado conforme a seção 9.
+2. Atualizar o status da issue para `Done` via MCP (`save_issue`).
+
+Nenhuma issue deve permanecer em `In Progress` após a entrega, nem ser movida para `Done` sem o registro da seção 9.
+
+---
+
+## 11. Regra final
 
 A key da issue identifica o item de trabalho dentro do produto.
 
