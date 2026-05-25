@@ -1,99 +1,170 @@
 # Quick Start
 
-Este guia leva você do zero até uma sessão funcional em menos de 5 minutos.
+Este fluxo leva de um projeto vazio a uma sessao funcional do ChinaCode CLI em cerca de 5 minutos.
 
----
+## 1. Abra um workspace
 
-## 1. Configure sua API key
+Use um projeto existente ou crie um diretorio pequeno para teste:
 
 ```bash
-# Crie o .env no diretório do seu projeto
-echo 'OPENAI_API_KEY=sua-chave-aqui' > .env
-echo 'OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1' >> .env
-echo 'DEFAULT_MODEL=qwen-plus' >> .env
+mkdir meu-projeto-chinacode
+cd meu-projeto-chinacode
+npm init -y
+mkdir -p src skills
 ```
 
----
+Se voce esta testando a partir do codigo-fonte do ChinaCode, este diretorio sera o workspace alvo. Mais abaixo, o comando `npm run dev` deve ser executado no repositorio do CLI com `WORKSPACE_DIR` apontando para este caminho.
 
-## 2. Inicie o ChinaCode
+## 2. Crie o `.env`
+
+Escolha um provedor OpenAI-compatible. Exemplo com Qwen via DashScope:
 
 ```bash
-# No diretório do seu projeto
+cat > .env <<'EOF'
+OPENAI_API_KEY=sk-sua-chave
+OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+DEFAULT_MODEL=qwen-plus
+FAST_MODEL=qwen-turbo
+SANDBOX_ENABLED=true
+AUTO_APPROVE=false
+PRICE_INPUT=0.8
+PRICE_OUTPUT=2.4
+EOF
+```
+
+Sem Docker, troque para:
+
+```env
+SANDBOX_ENABLED=false
+```
+
+## 3. Adicione instrucoes do agente
+
+Crie `AGENT.md` na raiz do workspace. O CLI le este arquivo na inicializacao para definir identidade, regras, skills padrao e subagentes configurados.
+
+```bash
+cat > AGENT.md <<'EOF'
+# Meu Projeto
+
+## Identity
+
+Voce e um agente de codigo TypeScript. Seja direto, faca mudancas pequenas e cite arquivos modificados.
+
+## Rules
+
+- Antes de editar, leia o arquivo relevante
+- Prefira TypeScript simples e testavel
+- Depois de editar, sugira ou execute uma validacao adequada
+
+## Skills
+
+- test-generation
+
+## Subagents
+
+- name: tester
+  model: qwen-turbo
+  skill: test-generation
+EOF
+```
+
+Adicione uma skill simples para o subagente de testes:
+
+```bash
+cat > skills/test-generation.md <<'EOF'
+# Test Generation
+
+## Quando usar
+Quando o usuario pedir testes, specs ou cobertura.
+
+## Checklist
+- Cobrir caminho feliz
+- Cobrir entradas vazias ou invalidas
+- Usar Vitest quando o projeto ja usa Vitest
+
+## Formato de saida
+Liste arquivos criados ou modificados e comandos de validacao.
+EOF
+```
+
+## 4. Inicie o CLI
+
+Com o pacote global:
+
+```bash
 chinacode
 ```
 
-Você verá o cabeçalho:
+A partir do repositorio do ChinaCode, sem link global:
 
-```
-────────────────────────────────────────────────────────────
-  ChinaCode CLI v0.1.0 | modelo: qwen-plus | sandbox: on
-────────────────────────────────────────────────────────────
-❯
+```bash
+WORKSPACE_DIR=/caminho/absoluto/para/meu-projeto-chinacode npm run dev
 ```
 
----
+Nesse modo, o `.env` precisa estar disponivel no diretorio onde `npm run dev` e executado ou as variaveis precisam estar exportadas no shell.
 
-## 3. Faça sua primeira pergunta
+Ao iniciar, o CLI mostra o cabecalho da versao e a mensagem:
 
-```
-❯ liste os arquivos TypeScript neste projeto
-```
-
-O agente vai usar a ferramenta `glob_search` para encontrar os arquivos e exibir o resultado.
-
----
-
-## 4. Peça uma modificação de código
-
-```
-❯ adicione uma função soma(a, b) no arquivo src/utils.ts
+```text
+ChinaCode CLI v0.1.0 - pronto. Digite /help para ajuda.
 ```
 
-Quando o agente propuser escrever o arquivo, você verá um diff e poderá aprovar:
+## 5. Use o primeiro agente
 
+No prompt `❯`, comece com uma tarefa de leitura:
+
+```text
+❯ liste a estrutura deste projeto e diga quais arquivos de configuracao voce encontrou
 ```
-📝 src/utils.ts
-+ export function soma(a: number, b: number): number {
-+   return a + b
-+ }
 
+Depois peca uma primeira mudanca pequena:
+
+```text
+❯ crie src/math.ts com uma funcao add(a, b) e gere um teste usando o subagente tester
+```
+
+O agente pode usar ferramentas como `list_directory`, `write_file`, `edit_file`, `bash` e `delegate_task`. Quando houver escrita de arquivo com `AUTO_APPROVE=false`, o CLI exibe um diff e pede aprovacao:
+
+```text
 Aprovar? [Y]es / [N]o / [A]lways:
 ```
 
-- **Y** — aprova esta edição
-- **N** — rejeita e o agente tenta outra abordagem
-- **A** — aprova esta e todas as edições seguintes da sessão
+| Resposta | Efeito |
+|----------|--------|
+| `Y` ou Enter | Aprova apenas esta escrita |
+| `N` | Rejeita a escrita; o agente pode tentar outro caminho |
+| `A` | Aprova automaticamente as proximas escritas da sessao |
 
----
-
-## 5. Comandos úteis na sessão
+## 6. Comandos uteis
 
 | Comando | O que faz |
 |---------|-----------|
-| `/help` | Lista todos os comandos disponíveis |
+| `/help` | Lista comandos e skills carregadas |
+| `/model <nome>` | Troca o modelo padrao da sessao |
+| `/sandbox on` ou `/sandbox off` | Liga ou desliga sandbox Docker |
 | `/cost` | Mostra tokens e custo acumulados |
-| `/clear` | Limpa o histórico da conversa |
+| `/bench <tarefa>` | Compara a tarefa entre modelos configurados |
+| `/sessions` | Lista sessoes salvas |
+| `/resume <id>` | Retoma uma sessao anterior |
+| `/compact` | Sumariza contexto longo |
 | `/exit` | Encerra o CLI |
 
-> Consulte [commands.md](../reference/commands.md) para a lista completa.
+O historico fica em `~/.chinacode/sessions.db` e e atualizado durante a sessao e ao sair.
 
----
+## 7. Encerrar
 
-## 6. Encerrando a sessão
-
-```
+```text
+❯ /cost
 ❯ /exit
 ```
 
-Ou pressione **Ctrl+C** duas vezes em menos de 800ms.
+Voce tambem pode pressionar Ctrl+C duas vezes para encerrar.
 
-A sessão é salva automaticamente em `~/.chinacode/sessions.db` e pode ser retomada com `/resume <id>`.
+## Proximos passos
 
----
-
-## Próximos passos
-
-- [Referência de slash commands](../reference/commands.md)
+- [Primeiro projeto](./first-project.md)
+- [Configuracao completa](../reference/config.md)
+- [Comandos](../reference/commands.md)
 - [Ferramentas nativas](../reference/tools.md)
-- [Configuração completa](../reference/config.md)
-- [Erros comuns e soluções](../reference/errors.md)
+- [Guia do AGENT.md](../guides/agent-md.md)
+- [Subagentes](../guides/subagents.md)

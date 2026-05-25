@@ -1,0 +1,34 @@
+# Source and local development
+src/
+coverage/
+node_modules/
+.git/
+.github/
+.claude/
+.cursor/
+.windsurf/
+.agents/
+.specs/
+_docs/
+
+# Local configuration and generated state
+.env
+.env.*
+*.local
+*.db
+~/.chinacode/
+mcp-servers.json
+
+# Tests and TypeScript-only inputs
+*.test.ts
+vitest.config.ts
+tsconfig.json
+
+# OS/editor noise
+.DS_Store
+
+# Keep built runtime and user-facing docs
+!dist/
+!README.md
+!CHANGELOG.md
+!docs/

@@ -7,6 +7,22 @@
   "bin": {
     "chinacode": "dist/index.js"
   },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts.map",
+    "!dist/**/*.test.js",
+    "!dist/**/*.test.d.ts",
+    "!dist/**/*.test.js.map",
+    "!dist/**/*.test.d.ts.map",
+    "docs",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
@@ -39,6 +55,14 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thyagodissenha/chinacode-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thyagodissenha/chinacode-cli/issues"
+  },
+  "homepage": "https://github.com/thyagodissenha/chinacode-cli#readme",
   "license": "MIT",
   "keywords": [
     "cli",
