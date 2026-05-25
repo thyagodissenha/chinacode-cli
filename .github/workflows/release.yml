@@ -57,7 +57,7 @@ jobs:
         run: echo "file=$(ls *.tgz)" >> "$GITHUB_OUTPUT"
 
       - name: Attest package provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: ${{ steps.package.outputs.file }}
 
