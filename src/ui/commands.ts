@@ -1,7 +1,9 @@
+import { join } from 'node:path'
 import type { AgentConfig } from '../types.js'
 import type { TUI } from './tui.js'
 import type { AgentLoop } from '../agent/loop.js'
 import type { SessionStorage } from '../storage/sessions.js'
+import { loadSkills } from '../skills/loader.js'
 
 const HELP_TEXT = `
 Comandos disponíveis:
@@ -37,10 +39,19 @@ export class CommandParser {
     switch (cmd?.toLowerCase()) {
       case '/help':
       case '/h':
-      case '/?':
+      case '/?': {
         this.tui.showError(HELP_TEXT.replace('✗ ', ''))
         process.stdout.write(HELP_TEXT + '\n')
+        const skills = loadSkills(join(this.config.workspaceDir, 'skills'))
+        if (skills.length > 0) {
+          process.stdout.write('\nSkills disponíveis:\n')
+          for (const skill of skills) {
+            process.stdout.write(`  ${skill.name.padEnd(20)} ${skill.description}\n`)
+          }
+          process.stdout.write('\n')
+        }
         return true
+      }
 
       case '/cost':
       case '/c': {

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { join } from 'node:path'
 import { loadConfig } from './config.js'
 import { createTools } from './tools/registry.js'
 import { AgentLoop } from './agent/loop.js'
@@ -8,25 +7,16 @@ import { TUI } from './ui/tui.js'
 import { CommandParser } from './ui/commands.js'
 import { KeyboardHandler } from './ui/keyboard.js'
 import { SessionStorage } from './storage/sessions.js'
+import { parseAgentMd, buildSystemPromptFromAgentMd } from './agent/agent-md.js'
+import { loadSkills, formatSkillsForPrompt } from './skills/loader.js'
 
 const VERSION = '0.1.0'
 
 function loadSystemPrompt(config: ReturnType<typeof loadConfig>): string {
-  const agentMdPath = resolve(process.cwd(), 'AGENT.md')
-  let base = `Você é ChinaCode CLI v${VERSION}, um agente de codificação autônomo.
-Trabalhe no diretório: ${config.workspaceDir}
-Seja direto, eficiente e cite sempre os arquivos que modificar.`
-
-  if (existsSync(agentMdPath)) {
-    try {
-      const agentMd = readFileSync(agentMdPath, 'utf-8')
-      base = `${agentMd}\n\n---\nDiretório de trabalho: ${config.workspaceDir}`
-    } catch {
-      // ignore
-    }
-  }
-
-  return base
+  const parsed = parseAgentMd(config.workspaceDir)
+  const skills = loadSkills(join(config.workspaceDir, 'skills'))
+  const skillsSection = formatSkillsForPrompt(skills)
+  return buildSystemPromptFromAgentMd(parsed, config.workspaceDir, VERSION, skillsSection)
 }
 
 async function main(): Promise<void> {
