@@ -13,7 +13,6 @@
 ## Tech Stack
 
 **Core:**
-
 - Runtime: Node.js 20+
 - Language: TypeScript 5+ (ESM)
 - API Client: `openai` SDK (OpenAI-compatible; covers DashScope, DeepSeek, SiliconFlow)
@@ -25,7 +24,6 @@
 ## Scope
 
 **v1 (Foundation — Weeks 1-4) includes:**
-
 - Core ReAct agent loop with streaming and tool calling
 - Built-in tools: bash, read_file, write_file, edit_file, glob_search, grep_search, list_directory, delegate_task
 - Docker sandbox for command execution (with local fallback)
@@ -39,7 +37,6 @@
 - Session persistence (SQLite)
 
 **Explicitly out of scope for v1:**
-
 - MCP Hub (Phase 3)
 - Subagent delegation system (Phase 2)
 - Context summarization / git-aware context (Phase 2)

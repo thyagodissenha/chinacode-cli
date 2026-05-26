@@ -23,26 +23,14 @@ _None currently._
 ## Todos
 
 - [ ] Scaffold project structure (src/, tests/, package.json, tsconfig.json)
-- [ ] Implement features per Linear issues IA-86 to IA-137 (46 atomic tasks across 6 features)
-
-**Specs created (2026-05-25):**
-- `.specs/features/core-agent-loop/` — spec.md + tasks.md (7 tasks → IA-92 to IA-98)
-- `.specs/features/built-in-tools-and-sandbox/` — spec.md + tasks.md (11 tasks → IA-105 to IA-115)
-- `.specs/features/multi-model-and-routing/` — spec.md + tasks.md (6 tasks → IA-99 to IA-104)
-- `.specs/features/tui-and-ux/` — spec.md + tasks.md (9 tasks → IA-116 to IA-124)
-- `.specs/features/cost-tracking/` — spec.md + tasks.md (5 tasks → IA-125 to IA-129)
-- `.specs/features/config-and-persistence/` — spec.md + tasks.md (8 tasks → IA-130 to IA-137)
-- `.specs/codebase/TESTING.md` — Vitest conventions, test coverage matrix, gate commands
-
-**Linear project:** "ChinaCode CLI — M1: Foundation" (IA-86 to IA-137)
-- 6 epic issues (IA-86 to IA-91), 46 sub-issues
-- All in Backlog status, ready to implement
+- [ ] Mapear as features do Milestone 1 em especificações locais e tarefas atômicas (.specs/features/)
+- [ ] Implementar o Milestone 1 — Foundation
 
 ---
 
 ## Lessons Learned
 
-_None yet — project just initialized._
+_None yet — project just initialized from clean PRD slate._
 
 ---
 
@@ -58,4 +46,4 @@ _None yet — project just initialized._
 
 ## Preferences
 
-_Model guidance tip already shared: validation/state tasks work well with faster/cheaper models._
+- _Model guidance: validation/state tasks work well with faster/cheaper models._
