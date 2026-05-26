@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.js.map
+*.d.ts.map
+
+# IDE and tool dirs
+.agents/
+.antigravitycli/
+.cursor/
+.windsurf/
+.claude/worktrees/
+
+# Secrets
+.env
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

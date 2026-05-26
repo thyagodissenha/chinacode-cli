@@ -1,0 +1,10 @@
+{
+  "qwen-turbo": { "input": 0.05, "output": 0.20 },
+  "qwen-plus": { "input": 0.40, "output": 1.20 },
+  "qwen-max": { "input": 2.40, "output": 9.60 },
+  "qwen3-max": { "input": 1.10, "output": 4.40 },
+  "qwen2.5-coder-32b-instruct": { "input": 0.35, "output": 0.35 },
+  "deepseek-chat": { "input": 0.27, "output": 1.10 },
+  "deepseek-reasoner": { "input": 0.55, "output": 2.19 },
+  "ollama": { "input": 0.00, "output": 0.00 }
+}
