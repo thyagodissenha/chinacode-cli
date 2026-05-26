@@ -13,8 +13,8 @@ Cada agente deve atuar dentro da sua frente de responsabilidade, respeitando o e
 Antes de executar qualquer tarefa, o agente deve verificar se existe orientação aplicável em:
 
 ```text
-rules/
-skills/
+.agents/rules/
+.agents/skills/
 docs/
 specs/
 prd/
@@ -28,8 +28,8 @@ Quando houver conflito entre documentos, seguir esta prioridade:
 1. Instrução direta do usuário
 2. Documentos canônicos mais recentes do projeto
 3. PRD/TDD/SDD/SPEC relacionados à tarefa
-4. Regras em rules/
-5. Skills em skills/
+4. Regras em .agents/rules/
+5. Skills em .agents/skills/
 6. Convenções locais do código existente
 ```
 
@@ -54,27 +54,27 @@ Regras obrigatórias:
 Regra completa:
 
 ```text
-rules/linear_issue_management.md
+.agents/rules/linear_issue_management.md
 ```
 
 Skill para quebrar documentos em issues:
 
 ```text
-skills/break_prd_tdd_sdd_into_linear_issues.md
+.agents/skills/break_prd_tdd_sdd_into_linear_issues.md
 ```
 
 ---
 
 ## 4. Uso de rules
 
-Arquivos em `rules/` definem regras obrigatórias de governança.
+Arquivos em `.agents/rules/` definem regras obrigatórias de governança.
 
 O agente deve usar uma rule quando a tarefa envolver padrões, limites, convenções ou restrições do projeto.
 
 Exemplo:
 
 ```text
-rules/linear_issue_management.md
+.agents/rules/linear_issue_management.md
 ```
 
 Usar esta rule sempre que a tarefa envolver:
@@ -91,14 +91,14 @@ Usar esta rule sempre que a tarefa envolver:
 
 ## 5. Uso de skills
 
-Arquivos em `skills/` definem procedimentos operacionais.
+Arquivos em `.agents/skills/` definem procedimentos operacionais.
 
 O agente deve usar uma skill quando a tarefa pedir uma execução passo a passo ou transformação de entrada em saída estruturada.
 
 Exemplo:
 
 ```text
-skills/break_prd_tdd_sdd_into_linear_issues.md
+.agents/skills/break_prd_tdd_sdd_into_linear_issues.md
 ```
 
 Usar esta skill sempre que a tarefa pedir para:
@@ -150,7 +150,7 @@ TDD
 SDD
 SPEC
 Critérios de aceite da issue
-Regras em rules/
+Regras em .agents/rules/
 Comportamento real do sistema
 ```
 
@@ -189,11 +189,11 @@ PRD -> TDD -> SDD -> Backend/API/Frontend/Infra/Security -> QA -> Docs
 Para organização no Linear, seguir:
 
 ```text
-rules/linear_issue_management.md
+.agents/rules/linear_issue_management.md
 ```
 
 Para transformar documentos em backlog, seguir:
 
 ```text
-skills/break_prd_tdd_sdd_into_linear_issues.md
+.agents/skills/break_prd_tdd_sdd_into_linear_issues.md
 ```

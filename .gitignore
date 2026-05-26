@@ -4,7 +4,9 @@ dist/
 *.d.ts.map
 
 # IDE and tool dirs
-.agents/
+.agents/*
+!.agents/rules/
+!.agents/skills/
 .antigravitycli/
 .cursor/
 .windsurf/
